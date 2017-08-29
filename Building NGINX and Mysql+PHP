@@ -1,1 +1,149 @@
+搭建linux服务器
+作者：Morrowind078
+鉴于经常搭建服务器环境，所以写一篇文档来进行说明。环境为：linux的nginx服务器。Apache？不存在的。
+1、	nginx安装
+2、	mysql安装
+3、	php安装
+4、	其他修改
+服务器安装参考：http://blog.csdn.net/spokeninchina/article/details/46291309
+
+
+
+准备工作：yum install lrzsz（安装上传和下载文件的插件）、yum install zip unzip（安装zip文件的解压插件）  
+
+
+
+一、	安装NGINX服务器
+1）、安装依赖环境包
+[root@localhost/]# yum -y install gcc-c++
+[root@localhost/]# yum -y install zlib zlib-devel openssl openssl-devel pcre pcre-devel
+2）、安装NGINX
+[root@localhost/]# cd /root
+[root@localhost/]# wget –O http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm
+（如果没安装wget小工具，使用如下命令安装：[root@localhost ~]# yum -y install wget）
+[root@localhost~]# rpm -ivh nginx-release-centos-6-0.el6.ngx.noarch.rpm //按路径安装并显示进度
+[root@localhost ~]#yum install nginx  //安装NGINX服务器
+[root@localhost ~]#service nginx restart //启动服务
+Nginx启动后有两个进程，master为主进程，worker为工作进程
+在启动完NGINX后，我们可以在浏览器中输入http://localhost 或ip 查看welcometo nginx即算成功。
+ 
+3）、配置文件
+安装成功后输入whereis nginx命令，可以看到nginx的目录，它的配置文件nginx.conf在/etc/nginx下，可以进行相关设置
+4）、错误
+当运行yum命令时，可能会出现No such command: install nginx. Please use /usr/bin/yum –help报错，将yum改为/usr/bin/yum即可
+5）、NGINX相关命令
+查看nginx进程ps -ef | grep nginx
+查看nginx版本号 nginx -v
+停止进程 kill -QUIT 主进程号
+快速停止kill -TERM 主进程号
+
+二、	安装mysql
+1）、查看是否安装过mysql
+ yum list installed mysql*
+ rpm -qa | grep mysql*
+不一定有用（:D）
+2）、安装mysql客户端和相关服务
+yum install mysql 
+yum install mysql-server 
+yum install mysql-devel
+一套三连，不出意外就是安装成功了。然后启动mysql服务service mysqld start。使用ps -ef | grep mysqld查看是否启动。启动成功后输入mysql -uroot –p，然后在输入密码就可以进入数据库了。
+ 在mysql配置文件/etc/my.cnf中加入default-character-set=utf8 
+3）、数据库密码相关
+当登录mysql时，可能会出现ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)，说明密码错误，这时候我们要修改密码。
+当mysql服务启动成功后，使用mysqladmin -u root password 你想设置的密码。这样就可以设置root用户的密码，再用mysql -uroot –p命令，并填写你设置的密码，就可以登录数据库了。
+4）、错误相关
+安装yum install mysql-server 可能会出现以下报错，是因为CentOS自带了MariaDB数据库，所以要安装mysql数据库需要先添加mysql命令sudo rpm -Uvh http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm，之后再执行安装，或执行 yum install mysql mysql-server mysql-libs mysql-server进行安装。
+ 
+
+有时候service mysqld start并不一定能启动mysql服务，他会出现以下提示 
+这时候，先停止mysql服务service mysqld stop或/bin/systemctl stop mysqld.service，之后再用/bin/systemctl start  mysqld.service命令启动mysql服务
+三、	安装php
+1）、
+这里使用源码包进行安装http://php.net/downloads.php，我选用的是php-5.6.31 版本。
+通过rz命令，将下载的源码包上传到服务器，然后用tar -xvzf 上传的文件名  解压安装包。
+接下来进行参数配置，配置前如果没有libxml2和libxml2-devel会报错，所以应该更新libxml2并安装libxml2-devel，使用在线安装：
+yum -y install libxml2
+yum -y install libxml2-devel
+补充，因为不同的操作系统环境，系统安装开发环境包的完整程度也不相同，所以建议安装操作系统的时候做必要选择，也可以统一执行一遍所有的命令，将没有安装的组件安装好，如果已经安装了可能会进行升级，版本完全一致则不会进行任何操作，命令除上面2个之外，汇总如下：
+yum -y install openssl
+yum -y install openssl-devel
+yum -y install curl
+yum -y install curl-devel
+yum -y install libjpeg
+yum -y install libjpeg-devel
+yum -y install libpng
+yum -y install libpng-devel
+yum -y install freetype
+yum -y install freetype-devel
+yum -y install pcre
+yum -y install pcre-devel
+yum -y install libxslt
+yum -y install libxslt-devel
+yum -y install bzip2
+yum -y install bzip2-devel
+
+进入解压后的php文件夹——
+
+之后执行命令：
+./configure --prefix=/usr/local/php --with-curl --with-freetype-dir --with-gd --with-gettext --with-iconv-dir --with-kerberos --with-libdir=lib64 --with-libxml-dir --with-mysqli --with-openssl --with-pcre-regex --with-pdo-mysql --with-pdo-sqlite --with-pear --with-png-dir --with-jpeg-dir --with-xmlrpc --with-xsl --with-zlib --with-bz2 --with-mhash --with-mysql --enable-fpm --enable-bcmath --enable-libxml --enable-inline-optimization --enable-gd-native-ttf --enable-mbregex --enable-mbstring --enable-opcache --enable-pcntl --enable-shmop --enable-soap --enable-sockets --enable-sysvsem --enable-sysvshm --enable-xml --enable-zip
+等待安装完成。以上步骤可能会出现问题，请自行查阅资料解决。
+安装完成后先后执行make和make install命令进行编译
+编译完成后，执行命令
+cp php.ini-development /usr/local/php/lib/php.ini
+cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
+cp sapi/fpm/php-fpm /usr/local/bin
+将相关配置文件复制，并且启动php-fpm服务/usr/local/bin/php-fpm。默认使用9000端口号，使用netstat -tln | grep 9000可以查看是否启动成功 
+如图则是启动成功。
+	2）、
+找到nginx.conf文件，使用vim打开它，加入index.php配置，使它支持php文件
+ 
+前者为nginx的启动目录，后者为添加的启动类型。
+index index.php index.html index.htm;
+try_files $uri $uri/ /index.php?$query_string;
+再在最后加入
+ 
+gzip on;
+        gzip_min_length 1k;
+        gzip_buffers 16 64k;
+        gzip_http_version 1.1;
+        gzip_comp_level 6;
+        gzip_types text/plain application/x-javascript text/css application/xml text/javascript application/javascript;
+        gzip_vary on;
+        location ~ \.php {
+            root           /srv/htpdocs;
+            fastcgi_pass   127.0.0.1:9000;
+            fastcgi_index  /main/index.html;
+            fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+            fastcgi_param PATH_INFO $fastcgi_path_info;
+            fastcgi_split_path_info ^(.+\.php)(.*)$;
+            include        fastcgi_params;
+            client_max_body_size 35m;
+            rewrite         "^/+$" /main/index.html break;
+         }
+        location ~ .*\.(gif|jpg|jpeg|png|bmp|swf|mp3|fnt|dbmv)$ {
+            root /srv/htpdocs;
+            expires 30d;
+        }
+保存退出。重启nginx服务器。
+/usr/sbin/nginx -s stop
+/usr/sbin/nginx
+进入你设置的启动目录，建一个test.php
+<?php
+Phpinfo();
+?>
+保存退出。
+然后在网页上打开，就可以看到配置了。
+四、	其他修改
+完成以上步骤，基本一个服务器的框架就完成了，但是还有许多配置需要修改。
+1）、php.ini文件修改
+首先修改错误提示error_reporting，改为 E_ALL & ~E_DEPRECATED & ~E_STRICT
+并将display_startup_errors和display_errors改为Off
+将;default_charset = "UTF-8"前方的;去掉
+将upload_max_filesize和post_max_size改为100M（上传需要）
+将;date.timezone =改为date.timezone ="Asia/Shanghai"  （重要！！）
+
+
+完成以上修改后，重启php-fpm服务，killall php-fpm关闭进程，然后在启动/usr/local/bin/php-fpm
+2）、
+待续:D
 
