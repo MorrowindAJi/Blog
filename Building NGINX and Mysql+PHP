@@ -9,7 +9,7 @@
 
 
 
-准备工作：yum install lrzsz（安装上传和下载文件的插件）、yum install zip unzip（安装zip文件的解压插件）  
+准备工作：yum install lrzsz（安装上传和下载文件的插件）、yum install zip unzip（安装zip文件的解压插件）
 
 
 
@@ -26,7 +26,7 @@
 [root@localhost ~]#service nginx restart //启动服务
 Nginx启动后有两个进程，master为主进程，worker为工作进程
 在启动完NGINX后，我们可以在浏览器中输入http://localhost 或ip 查看welcometo nginx即算成功。
- 
+
 3）、配置文件
 安装成功后输入whereis nginx命令，可以看到nginx的目录，它的配置文件nginx.conf在/etc/nginx下，可以进行相关设置
 4）、错误
@@ -43,19 +43,19 @@ Nginx启动后有两个进程，master为主进程，worker为工作进程
  rpm -qa | grep mysql*
 不一定有用（:D）
 2）、安装mysql客户端和相关服务
-yum install mysql 
-yum install mysql-server 
+yum install mysql
+yum install mysql-server
 yum install mysql-devel
 一套三连，不出意外就是安装成功了。然后启动mysql服务service mysqld start。使用ps -ef | grep mysqld查看是否启动。启动成功后输入mysql -uroot –p，然后在输入密码就可以进入数据库了。
- 在mysql配置文件/etc/my.cnf中加入default-character-set=utf8 
+ 在mysql配置文件/etc/my.cnf中加入default-character-set=utf8
 3）、数据库密码相关
 当登录mysql时，可能会出现ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)，说明密码错误，这时候我们要修改密码。
 当mysql服务启动成功后，使用mysqladmin -u root password 你想设置的密码。这样就可以设置root用户的密码，再用mysql -uroot –p命令，并填写你设置的密码，就可以登录数据库了。
 4）、错误相关
 安装yum install mysql-server 可能会出现以下报错，是因为CentOS自带了MariaDB数据库，所以要安装mysql数据库需要先添加mysql命令sudo rpm -Uvh http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm，之后再执行安装，或执行 yum install mysql mysql-server mysql-libs mysql-server进行安装。
- 
 
-有时候service mysqld start并不一定能启动mysql服务，他会出现以下提示 
+
+有时候service mysqld start并不一定能启动mysql服务，他会出现以下提示
 这时候，先停止mysql服务service mysqld stop或/bin/systemctl stop mysqld.service，之后再用/bin/systemctl start  mysqld.service命令启动mysql服务
 三、	安装php
 1）、
@@ -92,16 +92,15 @@ yum -y install bzip2-devel
 cp php.ini-development /usr/local/php/lib/php.ini
 cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
 cp sapi/fpm/php-fpm /usr/local/bin
-将相关配置文件复制，并且启动php-fpm服务/usr/local/bin/php-fpm。默认使用9000端口号，使用netstat -tln | grep 9000可以查看是否启动成功 
-如图则是启动成功。
+将相关配置文件复制，并且启动php-fpm服务/usr/local/bin/php-fpm。默认使用9000端口号，使用netstat -tln | grep 9000可以查看是否启动成功
 	2）、
 找到nginx.conf文件，使用vim打开它，加入index.php配置，使它支持php文件
- 
+
 前者为nginx的启动目录，后者为添加的启动类型。
 index index.php index.html index.htm;
 try_files $uri $uri/ /index.php?$query_string;
 再在最后加入
- 
+
 gzip on;
         gzip_min_length 1k;
         gzip_buffers 16 64k;
@@ -146,4 +145,3 @@ Phpinfo();
 完成以上修改后，重启php-fpm服务，killall php-fpm关闭进程，然后在启动/usr/local/bin/php-fpm
 2）、
 待续:D
-
