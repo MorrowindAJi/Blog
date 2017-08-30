@@ -2,6 +2,8 @@
 Hi,everyone
 我决定啦~以后就在这里写博客啦~
 
+原先一些博文放在新浪博客上，就不转过来了，GITHUB放图片貌似有点难，所以以后2边会同时更新，除开以前的博文，GITHUB优先更新！
+
 新浪博客：http://blog.sina.com.cn/u/2113345237
 
 新浪微博：http://weibo.com/MorrowindAJi
