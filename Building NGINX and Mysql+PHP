@@ -8,7 +8,7 @@
 服务器安装参考：http://blog.csdn.net/spokeninchina/article/details/46291309
 具体细节可以下载NGINX文件夹里的文档
 
-
+环境：xshell5下安装
 
 准备工作：yum install lrzsz（安装上传和下载文件的插件）、yum install zip unzip（安装zip文件的解压插件）
 
