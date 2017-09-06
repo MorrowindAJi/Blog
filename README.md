@@ -14,3 +14,6 @@ Hi,everyone
 [Steam](http://steamcommunity.com/id/MorrowindAji)
 
 轻度强迫症患者——程序员
+
+
+#你可以点击Version文件查看版本更新
