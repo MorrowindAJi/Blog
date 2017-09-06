@@ -109,6 +109,7 @@ gzip on;
         gzip_comp_level 6;
         gzip_types text/plain application/x-javascript text/css application/xml text/javascript application/javascript;
         gzip_vary on;
+        add_header Access-Control-Allow-Origin http://www.baidu.com;(解决跨域问题)
         location ~ \.php {
             root           /srv/htpdocs;
             fastcgi_pass   127.0.0.1:9000;
