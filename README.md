@@ -16,4 +16,4 @@ Hi,everyone
 轻度强迫症患者——程序员
 
 ## 2017年9月6日
-### 新增了Version文件，你可以点击Version文件查看版本更新。
+新增了Version文件，你可以点击Version文件查看版本更新。
