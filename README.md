@@ -9,8 +9,6 @@ Hi,everyone
 
 [新浪博客](http://blog.sina.com.cn/u/2113345237)
 
-[新浪微博](http://weibo.com/MorrowindAJi)
-
 [Steam](http://steamcommunity.com/id/MorrowindAji)
 
 轻度强迫症患者——程序员
