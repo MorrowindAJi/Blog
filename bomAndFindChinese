@@ -1,0 +1,90 @@
+
+<?php
+if (isset($_GET['dir'])){ //设置文件目录
+	$basedir=$_GET['dir'];
+}else{
+	$basedir = '.';
+}
+$auto = 1;
+checkdir($basedir);
+function checkdir($basedir){
+	if ($dh = opendir($basedir)) {
+		while (($file = readdir($dh)) !== false) {
+			if ($file != '.' && $file != '..'){
+				if (!is_dir($basedir."/".$file)) {
+					//------------------------------------一行一行读取morrowind078--START----
+					$f= fopen("$basedir/$file","r");
+					while (!feof($f))
+					{
+					  $line = fgets($f);
+					  $response = checkChinese($line);
+					  if($response){
+					  	echo "filename: $basedir/$file ".$response;
+						echo "<br>";
+					  }
+					}
+					fclose($f);
+					//------------------------------------一行一行读取morrowind078--END---
+					//------------------------------------读取一个文件morrowind078--START---
+//					echo "filename: $basedir/$file ".checkChinese("$basedir/$file")." <br>";
+//					echo "filename: $basedir/$file ".checkBOM("$basedir/$file")." <br>";
+					//------------------------------------读取一个文件morrowind078--END---
+				}else{
+					$dirname = $basedir."/".$file;
+					checkdir($dirname);
+				}
+			}
+		}
+		closedir($dh);
+	}
+}
+function checkBOM ($filename) {
+	global $auto;
+	$contents = file_get_contents($filename);
+	$charset[1] = substr($contents, 0, 1);
+	$charset[2] = substr($contents, 1, 1);
+	$charset[3] = substr($contents, 2, 1);
+	if (ord($charset[1]) == 239 && ord($charset[2]) == 187 && ord($charset[3]) == 191) {
+		if ($auto == 1) {
+			$rest = substr($contents, 3);
+			rewrite ($filename, $rest);
+			return ("<font color=red>BOM found, automatically removed.</font>");
+		} else {
+			return ("<font color=red>BOM found.</font>");
+		}
+	}
+	else return ("BOM Not Found.");
+}
+function rewrite ($filename, $data) {
+	$filenum = fopen($filename, "w");
+	flock($filenum, LOCK_EX);
+	fwrite($filenum, $data);
+	fclose($filenum);
+}
+function checkChinese($filename){
+	global $auto;
+	$contents = $filename;
+//	$contents = file_get_contents($filename);
+	//包含中文、英文、数字 并至少有一个中文
+	preg_match_all('/([\'\"])([\x{4e00}-\x{9fa5}]+[\x{4e00}-\x{9fa5}A-Za-z0-9]|[\x4E00-\x9FA5A-Za-z0-9]+[\x{4e00}-\x{9fa5}])+([\'\"])/u', $contents, $matches);
+	//包含中文、英文、数字
+//	preg_match_all('/([\'\"])([\x{4e00}-\x{9fa5}A-Za-z0-9])+([\'\"])/u', $contents, $matches);
+	//包含中文
+//	preg_match_all('/([\'\"])([\x{4e00}-\x{9fa5}])+([\'\"])/u', $contents, $matches);
+//	    if(preg_match('/^[\x{4e00}-\x{9fa5}]+$/u', $contents,$matches)){
+//	        //全是中文
+////	        return 1;
+//	    }elseif(preg_match('/[\x{4e00}-\x{9fa5}]/u', $contents,$matches)){
+//	        //包含中文
+////	        return 0;
+//	    }
+	$arr = '';
+	foreach($matches[0] as $k=>$v){
+		$arr.=$v;
+	}
+	if(empty($arr)){
+		return 0;
+	}
+	return $arr;
+	}
+?>
