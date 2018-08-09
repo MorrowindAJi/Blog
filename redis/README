@@ -1,0 +1,113 @@
+本文档用于介绍php  redis的安装
+平台：windows
+php：5.6-nts
+服务器:apache
+本地测试:phpstudy
+
+思路：通过查看phpinfo()下的参数下载对应的redis和igbinary，下载地址如下：
+
+phpinfo下的参数如下：PHP Version 5.6.27
+==================================================
+|PHP Version	          |5.6.27                  |
+|Compiler	              |MSVC11 (Visual C++ 2012)|
+|Architecture	          |x86                     |
+|Zend Extension Build	  |API220131226,NTS,VC11   |
+|PHP Extension Build	  |API20131226,NTS,VC11    |
+==================================================
+
+可以看出需要下载：
+XXXX-5.6-VC11-X86版本的文件
+
+所以我下载的两个文件为：
+igbinary:php_igbinary-2.0.7-5.6-nts-vc11-x86.zip
+redis:php_redis-2.2.7-5.6-nts-vc11-x86.zip
+
+具体下载地址为：
+redis：https://windows.php.net/downloads/pecl/releases/redis/
+igbinary：https://windows.php.net/downloads/pecl/releases/igbinary/
+
+
+==========================================分割线=================================
+begin
+
+    将下载下来的2个文件解压缩后，将php_redis.dll和php_igbinary.dll拷贝至php的ext目录下
+    修改php.ini，在该文件中加入：
+    ; php_redis
+    extension=php_igbinary.dll
+    extension=php_redis.dll
+    注意：extension=php_igbinary.dll一定要放在extension=php_redis.dll的前面，否则此扩展不会生效
+
+    然后重启服务器，在查看phpinfo，这时候就会有redis扩展了
+
+then
+
+    完成上面步骤只是说明你的php环境支持了redis扩展，但是实际运行起来还是不行
+    以tp5为例，
+      加载redis:use think\cache\driver\Redis;
+      然后在需要的地方$redis = new Redis();
+      进行测试
+      $redis->set('test','hello redis');
+    	echo $redis->get('test');
+
+      这时候运行会报错：Redis server went away
+
+      只是因为redis还没有运行起来，但是你的运行环境是已经支持redis了
+      下面需要下载redis的客户端:https://github.com/MicrosoftArchive/redis/releases
+      我这里下载了3.2.100版本，下载后解压，进入根目录
+      打开命令字符串cmd：
+      >>redis-server.exe redis.windows.conf
+      如果运行成功会出现以下画面
+      ========================================================
+
+    XXX:\xxxxx>redis-server.exe redis.windows.conf
+                    _._
+               _.-``__ ''-._
+          _.-``    `.  `_.  ''-._           Redis 3.2.100 (00000000/0) 64 bit
+      .-`` .-```.  ```\/    _.,_ ''-._
+     (    '      ,       .-`  | `,    )     Running in standalone mode
+     |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
+     |    `-._   `._    /     _.-'    |     PID: 6636
+      `-._    `-._  `-./  _.-'    _.-'
+     |`-._`-._    `-.__.-'    _.-'_.-'|
+     |    `-._`-._        _.-'_.-'    |           http://redis.io
+      `-._    `-._`-.__.-'_.-'    _.-'
+     |`-._`-._    `-.__.-'    _.-'_.-'|
+     |    `-._`-._        _.-'_.-'    |
+      `-._    `-._`-.__.-'_.-'    _.-'
+          `-._    `-.__.-'    _.-'
+              `-._        _.-'
+                  `-.__.-'
+    ==============================================================
+    该画面可以查看你的进程ID和redis的端口6379，如果要改变端口，请修改redis.windows.conf文件
+
+
+    再次打开一个命令字符串cmd
+    >>redis-cli -h 127.0.0.1 -p 6379(根据你设置的端口来调)
+
+    不出意外redis命令就启动了，这时候在使用new Redis()的时候就不会报错了，redis已经正常运行了
+
+    注意：使用的时候 两个cmd都不要关闭，不然会把redis服务给关闭掉
+
+
+end
+
+   当时使用redis的时候，如果数据量大，怎么管理呢？
+   有一个可视化工具来管理redis，
+   github：https://github.com/uglide/RedisDesktopManager
+   下载地址：https://github.com/uglide/RedisDesktopManager/releases
+
+   下载完成之后连接你的redis配置，就可以查看你的redis记录的值了
+
+
+
+thanks
+    https://segmentfault.com/a/1190000011725819
+    https://blog.csdn.net/e62ces0iem/article/details/73477182
+    https://github.com/uglide/RedisDesktopManager
+    https://github.com/uglide/RedisDesktopManager/releases
+    https://redis.io
+    https://windows.php.net/downloads/pecl/releases/redis
+    https://windows.php.net/downloads/pecl/releases/igbinary
+
+Author
+  morrowind078
