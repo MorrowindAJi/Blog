@@ -1,0 +1,68 @@
+参考：http://blog.51cto.com/niubdada/2097391
+
+1、安装
+这个工具是用python写的，首先我们要安装框架
+首先升级pip，不然可能会报错
+pip install --upgrade pip
+
+然后安装Locust
+pip install Locust
+
+安装完成
+2、编写Locust file
+这里是压测软件的主要功能
+cd /www/wwwroot/XXXX
+vim locustfile.py
+
+cd /www/wwwroot/XXXX/
+locust -H http://XXXX
+
+
+访问页面：http://xxxx:8089/
+
+#-*- coding: UTF-8 -*- 
+from locust import HttpLocust, TaskSet
+
+#pc常用
+#个人信息
+def getUserInfo(l):
+    l.client.post("/api/SiSiEn/get_userinfo",{"token":"vhLld7wzMbU6ydDTxWY4mdGfh96NeTA6"})
+#登陆操作
+def login(l):
+    l.client.post("/api/SiSiEn/login", {"mobile_num":"15913136410","varcode":"123456"})
+#我的等级
+def getMyLevelDetial(l):
+    l.client.post("/api/SiSiEn/getMyLevelDetial",{"token":"vhLld7wzMbU6ydDTxWY4mdGfh96NeTA6"})
+
+#提现
+def withDrawCash(l):
+    l.client.post("/api/SiSiEn/withdraw_cash",{"token":"vhLld7wzMbU6ydDTxWY4mdGfh96NeTA6","money_num":"100","zfb_account":"159"})
+
+#提现记录
+def withDrawCashRecord(l):
+    l.client.post("/api/SiSiEn/withdraw_cash_record",{"token":"vhLld7wzMbU6ydDTxWY4mdGfh96NeTA6","limit_begin":"1","limit_num":"10"})
+
+#黑名单
+def blackList(l):
+    l.client.post("/api/SiSiEn/blackList",{"token":"vhLld7wzMbU6ydDTxWY4mdGfh96NeTA6","room_id":"100","limit_begin":"1","limit_num":"10"})
+
+
+
+#请求index
+def index(l):
+    l.client.get('/')
+
+class UserBehavior(TaskSet):
+    tasks = {index}
+
+#执行登陆和登出
+    def on_start(self):
+        login(self)
+        getUserInfo(self)
+
+
+class WebsiteUser(HttpLocust):
+    task_set = UserBehavior
+    min_wait = 3000
+    max_wait = 6000
+    host="http://xxx"
