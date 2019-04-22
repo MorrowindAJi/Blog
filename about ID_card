@@ -66,7 +66,7 @@ function idcard_verify_number($idcard_base){
     //校验码对应值
     $verify_number_list=array('1','0','X','9','8','7','6','5','4','3','2');
     $checksum=0;
-    for($i=0;$i
+    for($i=0;$i<strlen($idcard_base);$i++){
         $checksum += substr($idcard_base,$i,1) * $factor[$i];
     }
     $mod=$checksum % 11;
