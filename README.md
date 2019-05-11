@@ -7,7 +7,6 @@ Hi,everyone
 
 你可以访问下方的链接找到我，请注明github
 
-[新浪博客](http://blog.sina.com.cn/u/2113345237)
 
 [Steam](http://steamcommunity.com/id/MorrowindAji)
 

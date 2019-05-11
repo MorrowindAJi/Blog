@@ -1,0 +1,74 @@
+收银台硬件对接技术！
+感谢：http://www.cnblogs.com/skyfynn/p/5895703.html
+首先我们需要php_printer.dll扩展,下载地址为：https://windows.php.net/downloads/pecl/snaps/printer/0.1.0-dev/
+通过phpinfo()找到对应版本下载后，添加到ext目录下
+在php.ini里加入extension=php_printer.dll
+重启服务器，通过phpinfo()观察是否有printer扩展，如果有，说明安装成功！
+注意：php_printer最高支持php5.5，不支持更高版本
+
+然后我们可以新建一个php页面，写上
+$handle = printer_open('打印机名');
+printer_set_option($handle, PRINTER_MODE, "RAW");//printer mode必须设定为RAW
+$ZPL = "
+^L
+Dy2-me-dd
+Th:m:s
+AZ3,86,66,4,4,0,0E,{$name}
+BA,42,158,2,5,50,0,3,99922959
+E
+"
+printer_write($handle, $ZPL);
+printer_close($handle);
+
+运行后不出意外基本可以打印出来，接下来只是调整格式问题了，这个不谈。不清楚可以参考：http://www.cnblogs.com/skyfynn/p/5895703.html
+==============================================================================================================================
+
+上述例子扩展仅支持php5.5，我们想要支持更高版本该怎么办呢？
+
+这时候，我们可以下载一个浏览器驱动——lodop,官网：http://www.lodop.net/
+
+下载完成后，安装：CLodop_Setup_for_Win32NT.exe，该驱动会自动检测你的浏览器，支持多个浏览器
+升级可以用 install_lodop64.exe或者install_lodop32.exe
+接下来，在你需要的地方引入LodopFuncs.js
+
+然后写入
+<p><a href="javascript:prn1_preview()">打印预览</a>,可<a href="javascript:prn1_print()">直接打印</a>也可      
+<a href="javascript:prn1_printA()">选择打印机</a>打印。<br><br>
+
+以上函数都是js里的，具体设计的JS如下
+<script language="javascript" type="text/javascript">   
+        var LODOP; //声明为全局变量 
+	function prn1_preview() {	
+		CreateOneFormPage();	
+		LODOP.PREVIEW();	
+	};
+	function prn1_print() {		
+		CreateOneFormPage();
+		LODOP.PRINT();	
+	};
+	function prn1_printA() {		
+		CreateOneFormPage();
+		LODOP.PRINTA(); 	
+	};	
+	function CreateOneFormPage(){
+		LODOP=getLodop();  
+		LODOP.PRINT_INIT("小票");//设置标题
+		LODOP.SET_PRINT_PAGESIZE(1,'4.8cm','15cm',"")//设置打印的纸张大小，重要，支持px、cm、mm等格式
+		var strStyleCSS="<link href='printer.css' type='text/css' rel='stylesheet'>";
+		var strFormHtml="<head>"+strStyleCSS+"</head><body>"+document.getElementById("form1").innerHTML+"</body>";//设置你的页面CSS格式，重要！如果不引人，即便你设置了格式也会打印不出来，顺便把你要打印的div之类的数据获取到
+		LODOP.ADD_PRINT_HTM(25,10,'4.8cm','15cm',strFormHtml);//打印,4个参数，分别是：距页面上边距X，距离页面左边距X，打印的宽度，打印的长度，打印的数据
+	};	                     
+	function prn3_preview(){
+		LODOP=getLodop();  
+		LODOP.PRINT_INIT("打印控件功能演示_Lodop功能_全页");
+		LODOP.ADD_PRINT_HTM(0,0,"100%","100%",document.documentElement.innerHTML);
+		LODOP.PREVIEW();	
+	};	
+</script> 
+
+
+完成上述步骤后基本就可以打印出你想要的效果了
+
+==============================================================================
+
+最后一种方法：使用word文档+书签+IE浏览器的打印方法，不过这里不做过多描述，毕竟这个方法有局限，只支持IE浏览器

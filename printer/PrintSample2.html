@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>WEB打印控件LODOP的样例二:打印当前页面的内容</title>
+
+<script language="javascript" src="LodopFuncs.js"></script>
+<link href='printer.css' type='text/css' rel='stylesheet'>
+</head>
+<body>
+<h2><font color="#009999">演示如何打印当前页面的内容：</font>
+</h2>
+<form id="form1">
+	<table border="0" width="170" id="tb01"  >
+		<tr>
+			<td width="133" id="mtb001" >
+			<font face="宋体" color="" size="3" class="title" >====无边界茶叶====</font>
+		</td>
+		<tr>
+			<td width="133" class="fen">
+				==================
+			</td>
+		</tr>
+	</table>
+	<table border="0" width="170" height="106" cellspacing="0" >
+		<tr>
+			<td height="16" width="45" class="text-left">名称</td>
+			<td height="16" width="45" class="text-center">数量</td>
+			<td height="16" width="45" class="text-right">价格</td>
+		</tr> 
+		<tr>
+			<td colspan="3" class="fen">
+				==================
+			</td>
+		</tr>
+		<tr>
+			<td height="16" class="text-left">西湖龙井茶-年度版</td>
+			<td height="16" class="text-center">2</td>
+			<td height="16" class="text-right">100</td>
+		</tr>
+		<tr>
+			<td height="16" class="text-left">乌龙茶</td>
+			<td height="16" class="text-center">2</td>
+			<td height="16" class="text-right">100000</td>
+		</tr>
+		<tr>
+			<td height="16" class="text-left">乌龙茶</td>
+			<td height="16" class="text-center">2</td>
+			<td height="16" class="text-right">100</td>
+		</tr>
+		<tr>
+			<td height="16" class="text-left">乌龙茶</td>
+			<td height="16" class="text-center">2</td>
+			<td height="16" class="text-right">100</td>
+		</tr>
+		<tr>
+			<td height="16" class="text-left">乌龙茶</td>
+			<td height="16" class="text-center">2</td>
+			<td height="16" class="text-right">100</td>
+		</tr>
+		<tr>
+			<td colspan="3" class="fen">
+				==================
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="fen text-left small">售出商品:5000件</td>
+			<td class="fen text-right small">合计:5000</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="fen text-left small">实收:50000</td>
+			<td class="fen text-right small">找零:5000</td>
+		</tr>
+		<tr>
+			<td colspan="3" class="fen text-center small">支付方式:支付宝、微信、现金</td>
+		</tr>
+		<tr>
+			<td colspan="3" class="fen text-center small">销售时间:2019-05-09 14:03:59</td>
+		</tr>
+		<tr>
+			<td colspan="3" class="fen text-center small">咨询电话:0592-3306317</td>
+		</tr>
+		<td colspan="3" class="fen">
+			</td>
+		<tr>
+			<td colspan="3" class="fen text-center">谢谢惠顾，欢迎再次光临</td>
+		</tr>
+</table>
+</form>
+<br>
+
+<p><a href="javascript:prn1_preview()">打印预览</a>,可<a href="javascript:prn1_print()">直接打印</a>也可      
+<a href="javascript:prn1_printA()">选择打印机</a>打印。<br><br>
+<script language="javascript" type="text/javascript">   
+        var LODOP; //声明为全局变量 
+	function prn1_preview() {	
+		CreateOneFormPage();	
+		LODOP.PREVIEW();	
+	};
+	function prn1_print() {		
+		CreateOneFormPage();
+		LODOP.PRINT();	
+	};
+	function prn1_printA() {		
+		CreateOneFormPage();
+		LODOP.PRINTA(); 	
+	};	
+	function CreateOneFormPage(){
+		LODOP=getLodop();  
+		LODOP.PRINT_INIT("小票");
+		LODOP.SET_PRINT_PAGESIZE(1,'4.8cm','15cm',"")
+		// LODOP.SET_PRINT_STYLE("FontSize",18);
+		// LODOP.SET_PRINT_STYLE("Bold",1);
+		var strStyleCSS="<link href='printer.css' type='text/css' rel='stylesheet'>";
+		var strFormHtml="<head>"+strStyleCSS+"</head><body>"+document.getElementById("form1").innerHTML+"</body>";
+		// LODOP.ADD_PRINT_TEXT(0,0,260,39,"打印页面部分内容");
+		LODOP.ADD_PRINT_HTM(25,10,'4.8cm','15cm',strFormHtml);
+	};	                     
+	function prn2_preview() {	
+		CreateTwoFormPage();	
+		LODOP.PREVIEW();	
+	};
+	function prn2_manage() {	
+		CreateTwoFormPage();
+		LODOP.PRINT_SETUP();	
+	};	
+	function CreateTwoFormPage(){
+		LODOP=getLodop();  
+		LODOP.PRINT_INIT("打印控件功能演示_Lodop功能_表单二");
+		LODOP.ADD_PRINT_RECT(70,27,634,242,0,1);
+		LODOP.ADD_PRINT_TEXT(29,236,279,38,"页面内容改变布局打印");
+		LODOP.SET_PRINT_STYLEA(2,"FontSize",18);
+		LODOP.SET_PRINT_STYLEA(2,"Bold",1);
+		LODOP.ADD_PRINT_HTM(88,40,321,185,document.getElementById("form1").innerHTML);
+		LODOP.ADD_PRINT_HTM(87,355,285,187,document.getElementById("form2").innerHTML);
+		LODOP.ADD_PRINT_TEXT(319,58,500,30,"注：其中《表单一》按显示大小，《表单二》在程序控制宽度(285px)内自适应调整");
+	};              
+	function prn3_preview(){
+		LODOP=getLodop();  
+		LODOP.PRINT_INIT("打印控件功能演示_Lodop功能_全页");
+		LODOP.ADD_PRINT_HTM(0,0,"100%","100%",document.documentElement.innerHTML);
+		LODOP.PREVIEW();	
+	};	
+</script> 
+
+</body>
+</html>
