@@ -1,0 +1,15 @@
+最近在开发过程中，框架的版本由5.0+升级成为了5.1+，造成一些第三方的库无法使用，下面来简单说说如何处理：
+
+在TP5.1版本中，官方取消了vendor的方法，造成composer下来的库只能使用namespace等工作空间来命名后才可以使用，如何在不变的基础上使用原来的类库呢？笔者试了一上午，也找了很多资料，终于尝试出一种可行的方法。
+首先在tp5.0版本我们使用
+vendor("PHPExcel.PHPExcel");
+$objReader = \PHPExcel_IOFactory::createReader('Excel5');
+来达到加载类库的目的，在5.1后不能使用了，改为
+include(Env::get('vendor_path').'/PHPExcel/PHPExcel.php');
+$objReader  = \PHPExcel_IOFactory::createReader('Excel5');
+
+其中Env::get('vendor_path')是官方提供的方法，是获取composer的目录，再通过后接文件地址名，我们就可以将类库引入当前代码中，而不需要加入namespace来命名。
+
+注意：经此方法的确可以引入，但是后续如果有什么问题就不得而知了
+
+其实是PHPExcel这个类已经停止更新了，没有namespace这个说法T.T
