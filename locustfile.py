@@ -48,4 +48,4 @@ class WebsiteUser(HttpLocust):
     task_set = UserBehavior
     min_wait = 3000
     max_wait = 6000
-    host="https://yingli.intexh.com"
+    host="XXXXX"
