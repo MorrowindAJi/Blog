@@ -10,7 +10,7 @@ x.document.write('<div><pre style="white-space: pre-wrap;word-wrap: break-word;"
 x.document.close();
 ~~~
 
-如果想原样输出html文件内容，将`per`改为`xmp`即可
+如果想原样输出html文件内容，将`pre`改为`xmp`即可
 
 
 这样将打开一个新的窗口。
