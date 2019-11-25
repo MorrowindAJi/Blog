@@ -18,6 +18,6 @@ x.document.close();
 ## 2019年11月25日更新
 
 + 优化server和client的代码
-+ 获取redis参数的方法
-+ 删除redis、文件的方法
++ 新增获取redis参数的方法
++ 新增删除redis、文件的方法
 
