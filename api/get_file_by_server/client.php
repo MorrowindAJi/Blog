@@ -17,9 +17,12 @@ function apiPost($url,$postData='',$curlUrl = '',$ssl = false)
     curl_setopt($ch, CURLOPT_TIMEOUT, 60);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    if(!$ssl){
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    }
     // curl_setopt($ch, CURLOPT_HTTPHEADER, $curlUrl); 方法1
     // if($curlUrl) curl_setopt($ch, CURLOPT_RESOLVE, [$curlUrl]); 方法二
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $ssl);
     $result = curl_exec($ch);
     $resinfo = curl_getinfo($ch);
     $apierror = curl_error($ch);
