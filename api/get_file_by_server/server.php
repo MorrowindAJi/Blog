@@ -65,7 +65,7 @@ class DevelopmentServer extends Controller
      */
     public function getRedis($path = '',$sign = '',$time = '',$list = '')
     {
-        if($this->checkSign($path,$sign,$time)) return json_encode(['msg'=>'error sign','code'=>404]);
+        if($this->checkSign($path,$sign,$time)) return $this->returnJosn(404,'sign error');
         $config = config()['cache'];
         $redis = new \think\cache\driver\Redis($config);
         if($list){
