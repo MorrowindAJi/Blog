@@ -10,6 +10,9 @@ x.document.write('<div><pre style="white-space: pre-wrap;word-wrap: break-word;"
 x.document.close();
 ~~~
 
+如果想原样输出html文件内容，将`per`改为`xmp`即可
+
+
 这样将打开一个新的窗口。
 
 如果文件过大，可以使用`readFile()`来读取大文件，测试后发现6M的文件原来花费40S，优化后仅用2S。
