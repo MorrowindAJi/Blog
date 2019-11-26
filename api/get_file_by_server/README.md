@@ -22,5 +22,5 @@ x.document.close();
 
 + 优化server和client的代码
 + 新增获取redis参数的方法
-+ 新增删除redis、文件的方法
++ 新增删除redis、文件的方法 
 
