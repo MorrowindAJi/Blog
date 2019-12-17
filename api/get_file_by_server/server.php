@@ -15,7 +15,7 @@ class DevelopmentServer extends Controller
     /**
      * 私钥，额外验证传递访问的签名而已
      */
-    private  $privateKey = 'XXX';
+    private  $privateKey = 'XXXXX';
 
     /**
      * 错误代码
@@ -23,8 +23,13 @@ class DevelopmentServer extends Controller
     private $ERRORCODE = [
         100 => 'success file',//100是文件内容
         101 => 'success file list',//101是文件列表
+        102 => 'success file limit',//102是文件分页内容
+        103 => 'success file search',//103是文件搜索
         200 => 'success redis',//200是redis列表
+        300 => 'file cant read',//300文件不可读
+        301 => 'file cant download',//301文件不可下载，需要配置后缀参数FILESUFFIX
         404 => 'sign error',//签名错误
+        405 => 'page error',//超出页数范围
         1000 => '',//try里的报错
     ];
 
@@ -38,6 +43,15 @@ class DevelopmentServer extends Controller
         '.txt',
     ];
 
+    /**
+     * 初始化判断签名
+     */
+    public function initialize(){
+        $path = input('path','');
+        $sign = input('sign','');
+        $time = input('time','');
+        if($this->checkSign($path,$sign,$time)) die($this->returnJosn(404));
+    }
 
     /**
      * 获取当前服务器的文件目录
@@ -46,9 +60,8 @@ class DevelopmentServer extends Controller
      * @param list 要删除的文件列表
      * 测试在本地的tp5.1，php7.1版本
      */
-    public function getFileList($path = '',$sign = '',$time = '',$list = '')
+    public function getFileList($path = '',$list = '')
     {
-        if($this->checkSign($path,$sign,$time)) return $this->returnJosn(404);
         $path = urldecode($path);
         $root = Env::get('root_path').$path;
         try{
@@ -81,9 +94,8 @@ class DevelopmentServer extends Controller
     /**
      * 获取redis里的数据
      */
-    public function getRedis($path = '',$sign = '',$time = '',$list = '')
+    public function getRedis($list = '')
     {
-        if($this->checkSign($path,$sign,$time)) return $this->returnJosn(404);
         $config = config()['cache'];
         $redis = new \think\cache\driver\Redis($config);
         if($list){
@@ -97,36 +109,19 @@ class DevelopmentServer extends Controller
     }
 
     /**
-     * 获取文件有多少行
-     * @param $path 文件路径
-     * @param $returnType 返回类型,备用
-     */
-    public function getFileCount($file = '',$returnType = false)
-    {
-        $line = 0;
-        try{
-            $fp = fopen($file , 'r');
-            while(stream_get_line($fp,8192,"\n")){
-                $line++;
-            }
-            fclose($fp);//关闭文件
-            return $line;
-        }catch(\Exception $e){
-            return $e->getMessage();
-        }
-    }
-
-
-    /**
      * 读取特定行数，用于大文件读取
      * @param $path 文件路径
      * @param $page 开始的页数
      * @param $limit 读取的行数
      */
-    public function readFileByLimit($file = '',$page = 0,$limit = 1000)
+    public function readFileByLimit($path = '',$page = 1,$limit = 1000)
     {
+        $path = urldecode($path);
+        $file = Env::get('root_path').$path;
+        $count = $this->getFileCount($file);
+        if($page>ceil($count/$limit)) return $this->returnJosn(405);
         $response = $this->readFile($file);
-        $begin = $page * $limit;
+        $begin = ($page-1) * $limit;
         $i = 0;
         $txt = '';
         foreach ($response as $key => $value) {
@@ -135,32 +130,35 @@ class DevelopmentServer extends Controller
             $txt .= $value."\n";
             $i++;
         }
-        return $txt;
+        return $this->returnJosn(102,$txt);
     }
 
     /**
      * 搜索文件
      * @param $path 文件路径
      * @param $search 要搜索的字符
-     * @param $role 读取规则：是否区分大小写role['Aa']
+     * @param $role 读取规则：是否区分大小写role['Aa'],JSON化传递数据
      * @param $limit 读取的行数,备用
      */
-    public function searchFile($file = '',$search = "",$role = [],$limit = 1000)
+    public function searchFile($path = '',$search = "",$role = [],$limit = 1000)
     {
+        $path = urldecode($path);
+        $file = Env::get('root_path').$path;
         if(empty($search)) return false;
         try{
+            $role = json_decode($role,true);
             $response = $this->readFile($file);
             $txt = '';
-            $searchType = isset($role['Aa'])?'strstr':'stristr';//前者区分大小写，后者不区分
+            $searchType = isset($role['Aa']) && !empty($role['Aa'])?'strstr':'stristr';//前者区分大小写，后者不区分
             foreach ($response as $key => $value) {
                 if($searchType($value,$search)){
                     $item = $key + 1;
                     $txt .= "[$item]:".$value."\n";
                 }
             }
-            return $txt;
+            return $this->returnJosn(103,$txt);
         }catch(\Exception $e){
-            return $e->getMessage();
+            return $this->returnJosn(1000,$e->getMessage());
         }
     }
 
@@ -170,16 +168,18 @@ class DevelopmentServer extends Controller
      * @param $path 文件路径
      * @param int $readBuffer //分段下载 每次下载的字节数 默认1024bytes
      */
-    public function downloadFile($file = '',$readBuffer = 1024)
+    public function downloadFile($path = '',$readBuffer = 1024)
     {
+        $path = urldecode($path);
+        $file = Env::get('root_path').$path;
         //检测下载文件是否存在 并且可读
         if (!is_file($file) && !is_readable($file)) {
-            return false;
+            return $this->returnJosn(300);
         }
         //检测文件类型是否允许下载
         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         if (!in_array('.'.$ext,$this->FILESUFFIX)) {
-            return false;
+            return $this->returnJosn(301);
         }
         //设置头信息
         //声明浏览器输出的是字节流
@@ -188,6 +188,7 @@ class DevelopmentServer extends Controller
         header('Accept-Ranges:bytes');
         //告诉浏览器文件的总大小
         $fileSize = filesize($file);//坑 filesize 如果超过2G 低版本php会返回负数
+        // echo $fileSize;die;
         header('Content-Length:' . $fileSize); //注意是'Content-Length:' 非Accept-Length
         //声明下载文件的名称
         header('Content-Disposition:attachment;filename=' . basename($file));//声明作为附件处理和下载后文件的名称
@@ -201,7 +202,25 @@ class DevelopmentServer extends Controller
 
     }
 
-
+    /**
+     * 获取文件有多少行
+     * @param $path 文件路径
+     * @param $returnType 返回类型,备用
+     */
+    private function getFileCount($file = '',$returnType = false)
+    {
+        $line = 0;
+        try{
+            $fp = fopen($file , 'r');
+            while(stream_get_line($fp,8192,"\n")){
+                $line++;
+            }
+            fclose($fp);//关闭文件
+            return $line;
+        }catch(\Exception $e){
+            return $e->getMessage();
+        }
+    }
 
     /**
      * 遍历文件
@@ -217,18 +236,30 @@ class DevelopmentServer extends Controller
                  */
                 if ($file != '.' && $file != '..'){
                     if (!is_dir($basedir."/".$file)) {
-                        $temp['name'] = $file;
-                        $temp['type'] = 2;
-                        $temp['size'] = round(filesize($basedir."/".$file)/1024,2).'KB';
+                        $temp = [
+                            'name' => $file,
+                            'type' => 2,
+                            'size' => round(filesize($basedir."/".$file)/1024,2).'KB',
+                            'time' => date("Y-m-d H:i:s",filemtime($basedir."/".$file)),
+                            'count' => $this->getFileCount($basedir."/".$file),
+                        ];
                     }else{
-                        $while['name'] = $file;
-                        $while['type'] = 1;
-                        $while['size'] = '-';
+                        $while = [
+                            'name' => $file,
+                            'type' => 1,
+                            'size' => '-',
+                            'time' => date("Y-m-d H:i:s",filemtime($basedir."/".$file)),
+                            'count' => '-',
+                        ];
                     }
                 }elseif($file == '..'){
-                    $top['name'] = '../';
-                    $top['type'] = 0;
-                    $top['size'] = 0;
+                    $top = [
+                        'name' => '../',
+                        'type' => 0,
+                        'size' => 0,
+                        'time' => '-',
+                        'count' => '-',
+                    ];
                 }
                 if($while) array_unshift($return,$while);
                 if($temp) array_push($return,$temp);
