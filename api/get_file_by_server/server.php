@@ -3,7 +3,7 @@
 /**
  *tp5
  * 该测试是在tp5.1的环境下进行测试，源代码为官方提供的代码，php版本为7.3
- * 该文件放置目录为：/application/development下
+ * 该文件放置目录为：/application/development/controller
  * url为：http://XXXX/development/DevelopmentServer/getFileList
  * 
  * 参数说明：
