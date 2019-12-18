@@ -1,13 +1,16 @@
 <?php
 
 /**
- *tp5
- * 该测试是在tp5.1的环境下进行测试，源代码为官方提供的代码，php版本为7.3
- * 该文件放置目录为：/application/development下
- * url为：http://XXXX/development/DevelopmentServer/getFileList
+ *tp3
+ * 该测试是在tp3.2的环境下进行测试，源代码为官方提供的代码，php版本为7.3
+ * url为：http://XXXX/index.php?m=development&c=development&a=XXXX
+ * 注意：配置文件配置，
+ * Common/Conf下的cache.php为redis配置
+ * Common/Conf下的config.php需要有'LOAD_EXT_CONFIG' => 'cache',
+ * 该文件放置目录为：/Application/Development/Controller下
  * 
  * 参数说明：
- * @param path 为根目录下的日志文件路径,tp5下为/runtime
+ * @param path 为根目录下的日志文件路径,tp3下为/Application/Runtime
  * @param sign 为签名，具体签名可以自行设置，签名方法为：strtoupper(md5($path.$this->privateKey.$time))
  * @param time 验证签名的参数
  * @param list 文件列表，只有删除的时候该参数才不为空，其余时间默认为空，postman中的格式为
@@ -17,13 +20,13 @@
  */
 
 
-namespace app\development\controller;
 
-use think\Controller;
-use think\facade\Env;
+namespace Development\Controller;
 
-class DevelopmentServer extends Controller
-{
+use Think\Controller;
+
+class serverTp3Controller extends Controller {
+    
 
     /**
      * 私钥，额外验证传递访问的签名而已
@@ -60,10 +63,10 @@ class DevelopmentServer extends Controller
     /**
      * 初始化判断签名
      */
-    public function initialize(){
-        $path = input('path','');
-        $sign = input('sign','');
-        $time = input('time','');
+    public function _initialize(){
+        $path = I('path','');
+        $sign = I('sign','');
+        $time = I('time','');
         if($this->checkSign($path,$sign,$time)) die($this->returnJson(404));
     }
 
@@ -72,11 +75,11 @@ class DevelopmentServer extends Controller
      * @param code 100是文件内容
      * @param code 101是文件列表
      * @param list 要删除的文件列表
+     * 测试在本地的tp5.1，php7.1版本
      */
     public function getFileList($path = '',$list = '')
     {
-        $path = urldecode($path);
-        $root = Env::get('root_path').$path;
+        $root = '.'.urldecode($path);//tp3路径需要写相对路径
         try{
             if(!empty($list)){
                 $list = json_decode($list,true);
@@ -92,14 +95,14 @@ class DevelopmentServer extends Controller
                 foreach ($this->FILESUFFIX as $key) {
                     if(strstr($path,$key)){
                         $response = file_get_contents($root);//只能获取2G以内的数据
-                        return $this->returnJson(100,$response);
+                        die($this->returnJson(100,$response));
                     }
                 }
             }
             $response = $this->checkdir($root);
-            return $this->returnJson(101,$response);
+            die($this->returnJson(101,$response));
         }catch(\Exception $e){
-            return $this->returnJson(1000,$e->getMessage());
+            die($this->returnJson(1000,$e->getMessage()));
         }
     }
 
@@ -109,16 +112,19 @@ class DevelopmentServer extends Controller
      */
     public function getRedis($list = '')
     {
-        $config = config()['cache'];
-        $redis = new \think\cache\driver\Redis($config);
-        if($list){
-            $list = json_decode($list,true);
-            $response = $redis->del($list);
+        try{
+            $redis = new \Think\Cache\Driver\Redis();
+            if($list){
+                $list = json_decode($list,true);
+                $response = $redis->del($list);
+            }
+            //获取配置
+            $prefix = C('DATA_CACHE_PREFIX');//前缀
+            $redisList = $redis->keys($prefix.'*');
+            die($this->returnJson(200,$redisList));
+        }catch(\Exception $e){
+            die($this->returnJson(1000,$e->getMessage()));
         }
-        //获取配置
-        $prefix = $config['prefix'];
-        $redisList = $redis->keys($prefix.'*');
-        return $this->returnJson(200,$redisList);
     }
 
     /**
@@ -129,10 +135,9 @@ class DevelopmentServer extends Controller
      */
     public function readFileByLimit($path = '',$page = 1,$limit = 1000)
     {
-        $path = urldecode($path);
-        $file = Env::get('root_path').$path;
+        $file = '.'.urldecode($path);
         $count = $this->getFileCount($file);
-        if($page>ceil($count/$limit)) return $this->returnJson(405);
+        if($page>ceil($count/$limit)) die($this->returnJson(405));
         $response = $this->readFile($file);
         $begin = ($page-1) * $limit;
         $i = 0;
@@ -143,7 +148,7 @@ class DevelopmentServer extends Controller
             $txt .= $value."\n";
             $i++;
         }
-        return $this->returnJson(102,$txt);
+        die($this->returnJson(102,$txt));
     }
 
     /**
@@ -155,9 +160,8 @@ class DevelopmentServer extends Controller
      */
     public function searchFile($path = '',$search = "",$role = [],$limit = 1000)
     {
-        $path = urldecode($path);
-        $file = Env::get('root_path').$path;
-        if(empty($search)) return $this->returnJson(406);
+        $file = '.'.urldecode($path);
+        if(empty($search)) die($this->returnJson(406));
         try{
             $role = json_decode($role,true);
             $response = $this->readFile($file);
@@ -169,9 +173,9 @@ class DevelopmentServer extends Controller
                     $txt .= "[$item]:".$value."\n";
                 }
             }
-            return $this->returnJson(103,$txt);
+            die($this->returnJson(103,$txt));
         }catch(\Exception $e){
-            return $this->returnJson(1000,$e->getMessage());
+            die($this->returnJson(1000,$e->getMessage()));
         }
     }
 
@@ -183,16 +187,15 @@ class DevelopmentServer extends Controller
      */
     public function downloadFile($path = '',$readBuffer = 1024)
     {
-        $path = urldecode($path);
-        $file = Env::get('root_path').$path;
+        $file = '.'.urldecode($path);
         //检测下载文件是否存在 并且可读
         if (!is_file($file) && !is_readable($file)) {
-            return $this->returnJson(300);
+            die($this->returnJson(300));
         }
         //检测文件类型是否允许下载
         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         if (!in_array('.'.$ext,$this->FILESUFFIX)) {
-            return $this->returnJson(301);
+            die($this->returnJson(301));
         }
         //设置头信息
         //声明浏览器输出的是字节流
@@ -201,7 +204,6 @@ class DevelopmentServer extends Controller
         header('Accept-Ranges:bytes');
         //告诉浏览器文件的总大小
         $fileSize = filesize($file);//坑 filesize 如果超过2G 低版本php会返回负数
-        // echo $fileSize;die;
         header('Content-Length:' . $fileSize); //注意是'Content-Length:' 非Accept-Length
         //声明下载文件的名称
         header('Content-Disposition:attachment;filename=' . basename($file));//声明作为附件处理和下载后文件的名称
@@ -345,6 +347,5 @@ class DevelopmentServer extends Controller
         if($checkSign != $sign) return true;
         return false;
     }
-
 
 }
