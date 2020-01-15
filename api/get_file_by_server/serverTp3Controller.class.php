@@ -42,6 +42,7 @@ class serverTp3Controller extends Controller {
         102 => 'success file limit',//102是文件分页内容
         103 => 'success file search',//103是文件搜索
         200 => 'success redis',//200是redis列表
+        201 => 'success redis text',//201是redis的值
         300 => 'file cant read',//300文件不可读
         301 => 'file cant download',//301文件不可下载，需要配置后缀参数FILESUFFIX
         404 => 'sign error',//签名错误
@@ -121,10 +122,25 @@ class serverTp3Controller extends Controller {
             //获取配置
             $prefix = C('DATA_CACHE_PREFIX');//前缀
             $redisList = $redis->keys($prefix.'*');
+            sort($redisList);
             die($this->returnJson(200,$redisList));
         }catch(\Exception $e){
             die($this->returnJson(1000,$e->getMessage()));
         }
+    }
+
+    /**
+     * 获取redis数据内容
+     */
+    public function getRedisTxt($name)
+    {
+        $redis = new \Think\Cache\Driver\Redis();
+        $name = json_decode($name,true);
+        $redisList = $redis->get($name);
+        if(!$redisList){
+            $redisList = $redis->lrange($name,0,-1);
+        }
+        return $this->returnJson(201,$redisList);
     }
 
     /**
