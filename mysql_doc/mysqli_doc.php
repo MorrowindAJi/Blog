@@ -1,24 +1,25 @@
 <?php
 /**
  * 生成mysql数据字典
+ * 该版本适用于php高版本的导出,7.0以上可以使用
  */
 header ( "Content-type: text/html; charset=utf-8" );
 
 // 配置数据库
 $dbserver = "XXX";
-$dbusername = "XXXX";
+$dbusername = "XXX";
 $dbpassword = "XXX";
-$database = "XXXX";
+$database = "XXX";
 
 // 其他配置
 $title = '数据字典';
 
-$mysql_conn = @mysql_connect ( "$dbserver", "$dbusername", "$dbpassword" ) or die ( "Mysql connect is error." );
-mysql_select_db ( $database, $mysql_conn );
-mysql_query ( 'SET NAMES utf8', $mysql_conn );
-$table_result = mysql_query ( 'show tables', $mysql_conn );
+$mysql_conn = @mysqli_connect ( "$dbserver", "$dbusername", "$dbpassword" ) or die ( "Mysql connect is error." );
+mysqli_select_db ( $mysql_conn,$database);
+mysqli_query ( $mysql_conn,'SET NAMES utf8' );
+$table_result = mysqli_query (  $mysql_conn ,'show tables');
 // 取得所有的表名
-while ( $row = mysql_fetch_array ( $table_result ) ) {
+while ( $row = mysqli_fetch_array ( $table_result ) ) {
 	$tables [] ['TABLE_NAME'] = $row [0];
 }
 
@@ -28,8 +29,8 @@ foreach ( $tables as $k => $v ) {
 	$sql .= 'INFORMATION_SCHEMA.TABLES ';
 	$sql .= 'WHERE ';
 	$sql .= "table_name = '{$v['TABLE_NAME']}'  AND table_schema = '{$database}'";
-	$table_result = mysql_query ( $sql, $mysql_conn );
-	while ( $t = mysql_fetch_array ( $table_result ) ) {
+	$table_result = mysqli_query ($mysql_conn, $sql );
+	while ( $t = mysqli_fetch_array ( $table_result ) ) {
 		$tables [$k] ['TABLE_COMMENT'] = $t ['TABLE_COMMENT'];
 	}
 
@@ -39,13 +40,13 @@ foreach ( $tables as $k => $v ) {
 	$sql .= "table_name = '{$v['TABLE_NAME']}' AND table_schema = '{$database}'";
 
 	$fields = array ();
-	$field_result = mysql_query ( $sql, $mysql_conn );
-	while ( $t = mysql_fetch_array ( $field_result ) ) {
+	$field_result = mysqli_query ( $mysql_conn,$sql);
+	while ( $t = mysqli_fetch_array ( $field_result ) ) {
 		$fields [] = $t;
 	}
 	$tables [$k] ['COLUMN'] = $fields;
 }
-mysql_close ( $mysql_conn );
+mysqli_close ( $mysql_conn );
 
 $html = '';
 // 循环所有表
