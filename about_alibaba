@@ -1,0 +1,10 @@
+===================================================
+短信服务SDK升级说明
+2019年1月22日，短信服务发布了新版SDK，此日期后接入SDK的用户使用的均为新版SDK；2019年1月22日前接入的SDK的用户使用的是旧版SDK。相较于旧版SDK，新版SDK有以下优势：
+融入阿里云OpenAPI技术体系，改善用户体验。通过新版短信服务SDK，用户可以使用阿里云资源如API Explorer、CloudShell等工具体验API。
+阿里云统一维护，降低故障风险。新版短信服务SDK由阿里云SDK统一维护，同时支持自动更新及故障预警，包括Github通知和Deprecated提示等。
+新版短信服务SDK提供了更稳定、完善的开发环境，建议您尽快升级SDK。
+===================================================
+composer：composer require alibabacloud/sdk
+演示地址：https://api.aliyun.com/?spm=a2c4g.11186623.2.17.2a7850a4R4qb0H#/?product=Dysmsapi&lang=PHP
+git:https://github.com/aliyun/openapi-sdk-php-client?spm=a2c4g.11186623.2.14.53204e6aTJL9f4

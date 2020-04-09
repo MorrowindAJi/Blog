@@ -1,0 +1,49 @@
+php不同的程序员都有自己的编写习惯，但是对于开源项目的代码有着严格的代码格式规范，比较有名的是PSR
+如何找出自己项目代码的格式不规范问题，并修正呢？
+git上有个对应的规范项目，使用该项目，可以找出你的代码格式问题，并且进行修复
+
+下面开始简单说明：
+笔者使用composer安装：composer global require "squizlabs/php_codesniffer=*"
+注意：需要加上global字段，使用全局字段，可以让你在任何地方cmd命令：phpcs和phpcbf。当然也可以不加global，只在该项目下使用
+
+在任何地方你需要的地方打开cmd，输出：phpcs -h，如果出现对应的help说明，说明成功
+
+可以使用 phpcs /path/code/name.php 指定某个目录下的某个文件进行检查
+也可以使用 phpcs /path/code/  指定某个目录下的所有文件进行检查
+
+使用phpcs -n 参数可以将警告屏蔽不显示
+使用phpcs --standard=PSR2 参数来选择要使用的代码规范(默认PEAR)
+使用phpcs -i 来查看所有代码规范
+使用phpcs --standard=PSR2 -n /path/code/name.php来指定某个目录下的某个文件使用PSR2规范进行检查
+
+如果成功会出现类似于：
+FILE: /path/code/name.php
+----------------------------------------------------------------------
+FOUND 85 ERRORS AFFECTING 57 LINES
+----------------------------------------------------------------------
+    1 | ERROR | [x] End of line character is invalid; expected "\n"
+      |       |     but found "\r\n"
+ 1576 | ERROR | [x] Blank line found at end of control structure
+ 1580 | ERROR | [x] No space found after comma in argument list
+ 1586 | ERROR | [x] No space found after comma in argument list
+ 1587 | ERROR | [x] No space found after comma in argument list
+ 1589 | ERROR | [x] No space found after comma in argument list
+----------------------------------------------------------------------
+PHPCBF CAN FIX THE 75 MARKED SNIFF VIOLATIONS AUTOMATICALLY
+----------------------------------------------------------------------
+
+Time: 297ms; Memory: 22MB
+
+
+有错误的行数、地方、规范的说明、以及可以自动修复的问题数量
+
+然后使用phpcbf --standard=PSR2 -n /path/code/name.php 来自动修复问题。当然并不是所有问题都可以自动修复，还有些许问题需要编写人员自行修复
+
+自此，就可以自动规范代码格式，更多的问题可以查看对应的wiki
+当然，最好的方法就是养成良好的编写规范！
+以上，感谢阅读
+
+文档：
+PSR规范：https://www.jianshu.com/p/b33155c15343
+git：https://github.com/squizlabs/PHP_CodeSniffer
+wiki:https://github.com/squizlabs/PHP_CodeSniffer/wiki/Usage
