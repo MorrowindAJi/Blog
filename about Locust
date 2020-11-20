@@ -66,3 +66,51 @@ class WebsiteUser(HttpLocust):
     min_wait = 3000
     max_wait = 6000
     host="http://xxx"
+
+
+===========================================新的Locust
+随着Locust的版本更新和python的版本更新，上述的旧方法已经不适应新的系统了，现在更新新的Locust搭建，该测试地址为windows10，python为3.8.5，Locust为1.4.1
+安装
+这个工具是用python写的，首先我们要安装框架
+首先升级pip，不然可能会报错
+pip install --upgrade pip
+
+然后安装Locust
+pip install Locust
+
+完成之后，进入需要测试目录新建locustfile.py
+
+例子：
+
+import time
+from locust import HttpUser, TaskSet, task
+
+class UserBehavior(TaskSet):
+
+    @task(1)
+    def test_order(self):
+        self.client.get('XXXX')
+
+    @task(2)
+    def test_order(self):
+        self.client.post("/login", json={"username":"foo", "password":"bar"})
+
+
+class WebsiteUser(HttpUser):
+    tasks = [UserBehavior]
+    min_wait = 3000
+    max_wait = 6000
+
+注意：
+装饰有方法的方法@task是Locust的核心。Locust为每个正在运行的用户创建一个greenlet（微线程），该greenlet将调用这些方法
+而task(3)里的数字表示不同的权重，因为Locust在执行的时候是随机的，你可以赋予权重来增加随机的概率
+如果您声明一个名为on_start的方法，则该方法将为每个用户调用一次。
+
+
+完成之后使用locust来启动，如果你创建的不叫locustfile.py或者不在要测试的目录下，那么需要添加一些参数locust -f locust_files/my_locust_file.py 来指定位置和文件来启动locust
+启动后出现：
+[2020-11-20 11:13:14,958] DESKTOP-HM96I3P/INFO/locust.main: Starting web interface at http://0.0.0.0:8089 (accepting connections from all network interfaces)
+[2020-11-20 11:13:14,964] DESKTOP-HM96I3P/INFO/locust.main: Starting Locust 1.4.1
+
+然后打开http://localhost:8089/，就可以进行测试了
+
